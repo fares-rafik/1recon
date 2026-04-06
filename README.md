@@ -1,0 +1,29 @@
+# 🚀 1Recon v1.0 - Advanced Multi-Threaded Recon Framework
+
+**1Recon** is an all-in-one automation tool designed for **Red Teamers** and **Bug Hunters**. It streamlines the reconnaissance phase by integrating industry-standard tools into a high-performance, multi-threaded pipeline.
+
+## ✨ Features
+
+- **Multi-threaded Subdomain Enumeration:** Runs multiple tools (Subfinder, Amass, Assetfinder, etc.) simultaneously.
+- **Alive Domain Checker:** Integrated with HTTPX for rapid status checking.
+- **Port Scanning**: Using Nmap to scan open ports, run scripts and bypass waf
+- **Smart URL Filtering:** Automatically extracts "Juicy" URLs with parameters for injection testing (SQLi, XSS, SSRF, IDOR).
+- **Infrastructure Discovery:** ASN mapping, WHOIS, and DNS records.
+- **Technology & WAF Detection:** Identify backend stacks and firewalls instantly.
+- **🛡️ Secure Configuration:** Uses `.env` files to protect your API keys and sensitive tokens.
+
+## 🗺️ Roadmap (Coming Soon)
+
+- [ ] **Telegram Bot Integration:** Get real-time status updates and final reports directly to your phone.
+- [ ] **Nuclei Integration:** Auto-scan for known vulnerabilities after discovery.
+- [ ] **Visual Dashboard:** Generate HTML reports for better data visualization.
+
+## ⚙️ Installation & Setup
+
+1. **Clone the Repo:**
+
+```bash
+git clone [https://github.com/0xProfr2/1recon.git](https://github.com/0xProfr2/1recon.git)
+cd 1recon
+chmod +x 1recon.py
+```

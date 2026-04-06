@@ -1,0 +1,7 @@
+*.py[cod]
+.env
+venv/
+.venv/
+__pycache__/
+*.txt
+*.json
