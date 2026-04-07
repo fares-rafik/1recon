@@ -7,6 +7,7 @@ import os
 import glob
 import shutil
 import re
+import requests
 from datetime import datetime
 from traceback import print_tb
 from concurrent.futures import ThreadPoolExecutor
@@ -20,13 +21,13 @@ print("""
  ██║██╔══██╗██╔══╝  ██║     ██║   ██║██║╚██╗██║
  ██║██║  ██║███████╗╚██████╗╚██████╔╝██║ ╚████║
  ╚═╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝
-         All Bug Bounty Recon Tools In One v1.0
+         All Bug Bounty Recon Tools In One v1.0.0
                 By: FAres @0xProf
 """)
 
-CURRENT_VERSION = "5-4-2026"
-VERSION_URL = "https://raw.githubusercontent.com/0xProfr2/OneRecon/main/version.txt"
-TOOL_URL = "https://raw.githubusercontent.com/0xProfr2/OneRecon/main/Recon.py"
+CURRENT_VERSION = "v1.0.0"
+VERSION_URL = "https://raw.githubusercontent.com/0xProfr2/1recon/main/version.txt"
+TOOL_URL = "https://raw.githubusercontent.com/0xProfr2/1recon/main/1recon.py"
 
 
 def check_for_updates():
@@ -96,6 +97,8 @@ class Tools:
 
 # ============ API KEYS ============
 load_dotenv()
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 PDCP_API_KEY = os.getenv("PDCP_API_KEY", "")
 
@@ -103,8 +106,8 @@ PDCP_API_KEY = os.getenv("PDCP_API_KEY", "")
 
 # ============ PASSIVE SCAN ============
 subfinder = Tools("subfinder",
-                  "subfinder -d {domain} -all --recursive -o {output}",
-                  "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest")
+                "subfinder -d {domain} -all --recursive -o {output}",
+                "go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest")
 
 assetfinder = Tools("assetfinder",
                     "assetfinder --subs-only {domain}",
@@ -115,24 +118,24 @@ subenum = Tools("subenum.sh",
                 "git clone https://github.com/bing0o/SubEnum")
 
 sublist3r = Tools("sublist3r",
-                  "sublist3r -d {domain} -o {output}",
-                  "pip install sublist3r")
+                "sublist3r -d {domain} -o {output}",
+                "pip install sublist3r")
 
 amass = Tools("amass",
-              "amass enum -passive -d {domain} -o {output}",
-              "go install -v github.com/owasp-amass/amass/v4/...@master")
+            "amass enum -passive -d {domain} -o {output}",
+            "go install -v github.com/owasp-amass/amass/v4/...@master")
 
 findomain = Tools("findomain",
-                  "findomain -t {domain} -u {output}",
-                  "cargo install findomain")
+                "findomain -t {domain} -u {output}",
+                "cargo install findomain")
 
 chaos = Tools("chaos",
-              f"export PDCP_API_KEY={PDCP_API_KEY} && chaos -d {{domain}} -o {{output}}",
-              "go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest")
+            f"export PDCP_API_KEY={PDCP_API_KEY} && chaos -d {{domain}} -o {{output}}",
+            "go install -v github.com/projectdiscovery/chaos-client/cmd/chaos@latest")
 
 github_subdomains = Tools("github-subdomains",
-                          f"github-subdomains -d {{domain}} -t {GITHUB_TOKEN} -o {{output}}",
-                          "go install github.com/gwen001/github-subdomains@latest")
+                        f"github-subdomains -d {{domain}} -t {GITHUB_TOKEN} -o {{output}}",
+                        "go install github.com/gwen001/github-subdomains@latest")
 
 # ============ ACTIVE SCAN ============
 hakrevdns = Tools(
@@ -315,8 +318,7 @@ def merge_and_deduplicate(output_file="allsubs.txt"):
 def download_resolvers():
     if not os.path.exists("resolvers.txt"):
         print("[*] Downloading resolvers.txt...")
-        urllib.request.urlretrieve("https://raw.githubusercontent.com/trickest/resolvers/main/resolvers.txt",
-                                   "resolvers.txt")
+        urllib.request.urlretrieve("https://raw.githubusercontent.com/trickest/resolvers/main/resolvers.txt","resolvers.txt")
     else:
         print("[+] resolvers.txt already exists")
 
@@ -359,6 +361,21 @@ def merge_dirs():
     with open("alldirs.txt", "w") as f:
         for d in sorted(all_dirs): f.write(d + "\n")
 
+def send_telegram_msg(message):
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return # Skip if not configured
+        
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": f"🚀 [1Recon Notification]\n\n{message}",
+        "parse_mode": "Markdown"
+    }
+    
+    try:
+        requests.post(url, data=payload, timeout=10)
+    except Exception as e:
+        print(f"[!] Failed to send Telegram notification: {e}")
 
 # --- Execution Engine ---
 try:
@@ -387,25 +404,36 @@ try:
 
     allsubs = merge_and_deduplicate("allsubs.txt")
     print("[+] Step 1 Finished!")
+    send_telegram_msg(f"✅ Step 1 Finished!\nTarget: {args.domain}\nFound: {len(allsubs)} Subdomains.")
 
     # Steps 2 to 8 (Sequential)
     print("[*] Step 2: Alive Domains")
     httpx.run(input="allsubs.txt", output="all_httpx.txt")
     httpx200.run(input="allsubs.txt", output="httpx200.txt")
-
+    print("[+] Step 2 Finished!")
+    send_telegram_msg(f"✅ Step 2 Finished!\nTarget: {args.domain}\nFound: {len(httpx200)} Alive Domains.")
+    
     print("[*] Step 3: Port Scanning")
     nmap.run(input="allsubs.txt", output="nmap.txt")
+    print("[+] Step 3 Finished!")
+    send_telegram_msg(f"✅ Step 3 Finished!\nTarget: {args.domain}\nFound: {len(nmap)} Ports.")
 
     print("[*] Step 4: Infrastructure Discovery")
     asnmap.run(domain=args.domain, output="asnmap.txt")
     whois_tool.run(domain=args.domain, output="whois.txt")
     dnsx.run(input="allsubs.txt", output="dnsx.txt")
+    print("[+] Step 4 Finished!")
+    send_telegram_msg(f"✅ Step 4 Finished!\nTarget: {args.domain}\nFound: {len(asnmap)} ASNs, {len(whois_tool)} Whois Records, {len(dnsx)} PTR Records.")
 
     print("[*] Step 5: Know Technologies")
     httpx_tech.run(input="httpx200.txt", output="technologies.txt")
+    print("[+] Step 5 Finished!")
+    send_telegram_msg(f"✅ Step 5 Finished!\nTarget: {args.domain}\nFound: {len(httpx_tech)} Technologies.")
 
     print("[*] Step 6: Know WAFs")
     wafw00f.run(input="httpx200.txt", output="wafs.txt")
+    print("[+] Step 6 Finished!")
+    send_telegram_msg(f"✅ Step 6 Finished!\nTarget: {args.domain}\nFound: {len(wafw00f)} WAFs.")
 
     print("[*] Step 7: Gather URLs & Endpoints")
     waybackurls.run(input="allsubs.txt", output="wb1.txt")
@@ -414,11 +442,17 @@ try:
     katana.run(input="httpx200.txt", output="ktn.txt")
     paramspider.run(input="httpx200.txt", output="ps.txt")
     merge_urls()
+    print("[+] Step 7 Finished!")
+    send_telegram_msg(f"✅ Step 7 Finished!\nTarget: {args.domain}\nFound: {len(gau)} URLs.")
+
 
     print("[*] Step 8: Directory Discovery")
     ffuf.run(domain=args.domain, output="ffuf.txt")
     dirsearch.run(domain=args.domain, output="dirsearch.txt")
     merge_dirs()
+    print("[+] Step 8 Finished!")
+    send_telegram_msg(f"✅ Step 8 Finished!\nTarget: {args.domain}\nFound: {len(ffuf) + len(dirsearch)} Directories.")
+
 
     # Final Result Collection
     for key, filename in [
@@ -436,3 +470,4 @@ finally:
     with open(args.output, "w") as f:
         json.dump(results, f, indent=4)
     print(f"[+] Results saved to {args.output}")
+    send_telegram_msg(f"🏁 Recon Complete for {args.domain}!\nResults saved to {args.output}")
