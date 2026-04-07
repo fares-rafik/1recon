@@ -61,8 +61,8 @@ check_for_updates()
 # Parser Options
 parser = argparse.ArgumentParser()
 parser.add_argument("-d", "--domain", dest="domain", required=True, help="Target to Scan")
-parser.add_argument("-s", "--subs", dest="subs", help="recon on subdomains only")
-parser.add_argument("-p", "--path", dest="paths", help="recon on paths only")
+# parser.add_argument("-s", "--subs", dest="subs", help="recon on subdomains only")
+# parser.add_argument("-p", "--path", dest="paths", help="recon on paths only")
 parser.add_argument("-o", "--output", dest="output", default="report.json", metavar="FILE", help="output file")
 args = parser.parse_args()
 
