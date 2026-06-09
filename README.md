@@ -23,7 +23,7 @@
 1. **Clone the Repo:**
 
 ```bash
-git clone https://github.com/0xProfr2/1recon.git
+git clone https://github.com/fares-rafik/1recon.git
 
 cd 1recon
 
@@ -42,5 +42,6 @@ To start a full reconnaissance mission, use the following command:
 ## 🛠️ Available Options
 - **-d --domain** The target domain to scan (e.g., example.com ).
 - **-o --outputName** of the final JSON report fileNoreport.json.
+- **-p --path** scan on paths and params only
 - **-h --helpShow the** help message and exit.
 
