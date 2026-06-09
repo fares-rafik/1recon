@@ -24,7 +24,10 @@
 
 ```bash
 git clone https://github.com/fares-rafik/1recon.git
+```
+## setup
 
+```bash
 cd 1recon
 
 sudo cp 1recon.py /usr/local/bin/1recon
